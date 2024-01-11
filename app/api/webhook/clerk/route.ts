@@ -2,6 +2,8 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { connectToDatabase } from '@/lib/database'
+import User from '@/lib/database/models/user.model'
+import { NextResponse } from 'next/server'
  
 export async function POST(req: Request) {
  
@@ -55,8 +57,18 @@ export async function POST(req: Request) {
   if(eventType==='user.created'){
     const { id, email_addresses,  first_name, username } = evt.data;
 
-    
+  const user = {
+    clerkid:id,
+    email:email_addresses[0].email_address,
+    username:username,
+  }    
     await connectToDatabase();
+
+    const newuser = await User.create(user);
+    return new NextResponse(newuser!);
+
+
+
     console.log(id , email_addresses  , first_name , username);
 
     
